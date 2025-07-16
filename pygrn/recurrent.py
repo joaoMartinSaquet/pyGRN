@@ -1,8 +1,8 @@
 from keras import backend as K
 from keras import initializers
-from keras.engine import Layer
-from keras.engine import InputSpec
-from keras.layers.recurrent import RNN
+from keras.layers import Layer
+from keras.layers import InputSpec
+from keras.layers import RNN
 import numpy as np
 from pygrn.grns import DiffGRN
 from pygrn.layer import GRNInit, GRNLayer

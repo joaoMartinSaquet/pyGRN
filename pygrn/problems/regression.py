@@ -14,6 +14,7 @@ class Regression(Problem):
                  epochs=1, root_dir='./', lamarckian=False):
         pass
 
+
     def generation_function(self, grneat, generation):
         self.generation = generation
         self.error *= self.error_decrease
