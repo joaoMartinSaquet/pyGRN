@@ -45,7 +45,7 @@ class MyRegression(problems.base.Problem):
             grn.step()
             fit += np.abs(grn.get_output() - self.y_train[i]).item()
 
-        return fit
+        return -fit
 
 def main():
 

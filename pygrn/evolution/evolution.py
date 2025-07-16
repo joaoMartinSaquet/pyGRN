@@ -5,7 +5,7 @@ import os
 import pathlib
 from datetime import datetime
 from uuid import uuid4
-
+from loguru import logger
 
 class Evolution:
 
@@ -36,28 +36,49 @@ class Evolution:
         best_fit, best_ind = self.population.get_best()
         return best_fit, best_ind
 
-    def report(self):
+    def report(self, dump_log=False, dump_grn=True):
+
+        
         for species_id in range(len(self.population.species)):
             sp = self.population.species[species_id]
             sp_best = sp.get_best_individual()
-            with open(self.log_file, 'a') as f:
-                f.write('S,%s,%d,%d,%d,%f,%f,%d,%f,%f,%f\n' % (
-                    datetime.now().isoformat(),
-                    self.generation, species_id,
-                    len(sp.individuals),
-                    sp.sum_adjusted_fitness,
-                    sp_best.fitness,
-                    sp_best.grn.size(),
-                    sp.species_threshold,
-                    np.mean(sp.get_representative_distances()),
-                    np.mean([i.grn.size() for i in sp.individuals])))
+            logger.debug(
+                f'S,%s,%d,%d,%d,%f,%f,%d,%f,%f,%f' % (
+                datetime.now().isoformat(),
+                self.generation, species_id,
+                len(sp.individuals),
+                sp.sum_adjusted_fitness,
+                sp_best.fitness,
+                sp_best.grn.size(),
+                sp.species_threshold,
+                np.mean(sp.get_representative_distances()),
+                np.mean([i.grn.size() for i in sp.individuals])  
+                )
+
+            )
+            if dump_log:
+                with open(self.log_file, 'a') as f:
+                    f.write('S,%s,%d,%d,%d,%f,%f,%d,%f,%f,%f\n' % (
+                        datetime.now().isoformat(),
+                        self.generation, species_id,
+                        len(sp.individuals),
+                        sp.sum_adjusted_fitness,
+                        sp_best.fitness,
+                        sp_best.grn.size(),
+                        sp.species_threshold,
+                        np.mean(sp.get_representative_distances()),
+                        np.mean([i.grn.size() for i in sp.individuals])))
         best_fitness, best_ind = self.population.get_best()
         fit_mean, fit_std = self.population.get_stats()
-        with open(self.log_file, 'a') as f:
-            f.write('G,%s,%d,%d,%f,%d,%f,%f\n' % (
-                datetime.now().isoformat(),
-                self.generation, self.population.size(),
-                best_fitness, best_ind.grn.size(),
-                fit_mean, fit_std))
-        with open(self.grn_file, 'a') as f:
-            f.write(str(best_ind.grn) + '\n')
+        logger.info(f"Generation {self.generation}: best fit {best_fitness}, fit mean {fit_mean}, fit std {fit_std}")
+        if dump_log:
+            with open(self.log_file, 'a') as f:
+                f.write('G,%s,%d,%d,%f,%d,%f,%f\n' % (
+                    datetime.now().isoformat(),
+                    self.generation, self.population.size(),
+                    best_fitness, best_ind.grn.size(),
+                    fit_mean, fit_std))
+                
+        if dump_grn:
+            with open(self.grn_file, 'a') as f:
+                f.write(str(best_ind.grn) + '\n')
