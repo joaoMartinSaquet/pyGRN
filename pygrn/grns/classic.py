@@ -1,4 +1,6 @@
 import numpy as np
+import numba
+
 from copy import deepcopy
 from .base import GRN
 from loguru import logger
@@ -67,6 +69,8 @@ class ClassicGRN(GRN):
         return self.concentration[self.num_input:(
             self.num_output + self.num_input)]
 
+
+    # @numba.jit(nopython=True)
     def step(self, nsteps=1):
         """Runs the GRN concentration update"""
         

@@ -7,10 +7,12 @@ from datetime import datetime
 from uuid import uuid4
 from loguru import logger
 
+import joblib as jl    
+
 class Evolution:
 
     def __init__(self, problem, new_grn_function=lambda: ClassicGRN(),
-                 run_id=str(uuid4()), grn_dir='grns', log_dir='logs'):
+                 run_id=str(uuid4()), grn_dir='grns', log_dir='logs', num_workers=1):
         pathlib.Path(grn_dir).mkdir(parents=True, exist_ok=True)
         pathlib.Path(log_dir).mkdir(parents=True, exist_ok=True)
         self.grn_file = os.path.join(grn_dir, 'grns_' + run_id + '.log')
@@ -21,8 +23,10 @@ class Evolution:
         self.generation = 0
         self.best_fit_history = []
 
+        self.num_workers = num_workers
+
     def step(self):
-        self.population.evaluate(self.problem)
+        self.population.evaluate(self.problem, self.num_workers)
         self.population.speciation()
         self.population.adjust_thresholds()
         self.population.set_offspring_count()

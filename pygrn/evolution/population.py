@@ -3,6 +3,8 @@ from pygrn.evolution import mutate_modify, mutate, crossover
 from pygrn import config
 import numpy as np
 import random
+from joblib import Parallel, delayed
+from loguru import logger
 
 
 class Population:
@@ -26,13 +28,34 @@ class Population:
                                for k in range(num_create)]
             self.offspring += [Individual(g)]
 
-    def evaluate(self, problem):
-        for ind in self.offspring:
-            fit = ind.get_fitness(problem)
-            if fit < self.fit_min:
-                self.fit_min = fit
-            if fit > self.fit_max:
-                self.fit_max = fit
+
+            # self.evaluator_pool = 
+
+    def evaluate(self, problem, num_workers=1):
+        if num_workers == 1:
+            for ind in self.offspring:
+                fit = ind.get_fitness(problem)
+                if fit < self.fit_min:
+                    self.fit_min = fit
+                if fit > self.fit_max:
+                    self.fit_max = fit
+        else:
+
+            def get_fitness(ind_index):
+                fit = self.offspring[ind_index].get_fitness(problem)
+                # logger.info(fit)
+                return fit
+            fits = Parallel(n_jobs=num_workers, backend="threading")(
+                delayed(get_fitness)(index) for index in range(len(self.offspring))
+            )
+
+            min_pop_fit = np.min(fits)
+            max_pop_fit = np.max(fits)
+
+            if min_pop_fit < self.fit_min:
+                self.fit_min = min_pop_fit
+            if max_pop_fit > self.fit_max:
+                self.fit_max = max_pop_fit
 
     def size(self):
         return np.sum([len(sp.individuals) for sp in self.species])
