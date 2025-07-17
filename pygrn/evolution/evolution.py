@@ -19,6 +19,7 @@ class Evolution:
         self.population = Population(new_grn_function, problem.nin,
                                      problem.nout)
         self.generation = 0
+        self.best_fit_history = []
 
     def step(self):
         self.population.evaluate(self.problem)
@@ -78,7 +79,9 @@ class Evolution:
                     self.generation, self.population.size(),
                     best_fitness, best_ind.grn.size(),
                     fit_mean, fit_std))
-                
+           
         if dump_grn:
             with open(self.grn_file, 'a') as f:
                 f.write(str(best_ind.grn) + '\n')
+
+        self.best_fit_history.append(best_fitness)

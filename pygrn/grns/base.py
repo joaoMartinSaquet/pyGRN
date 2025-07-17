@@ -78,6 +78,9 @@ class GRN(abc.ABC):
                            'delta': self.delta})
 
     def from_str(self, grn_str):
+        """
+            Read the GRN from json string 
+        """
         g_dict = json.loads(grn_str)
         self.num_input = g_dict['num_input']
         self.num_output = g_dict['num_output']

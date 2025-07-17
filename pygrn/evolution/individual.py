@@ -1,6 +1,7 @@
+import numpy as np
 class Individual:
 
-    def __init__(self, grn, evaluated=False, fitness=0.0):
+    def __init__(self, grn, evaluated=False, fitness=-1000):
         self.grn = grn
         self.evaluated = evaluated
         self.fitness = fitness

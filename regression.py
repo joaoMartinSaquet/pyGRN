@@ -3,9 +3,9 @@ import argparse
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from loguru import logger
 
-
-def f(t, f: float = 0.5, k: int = 2):
+def f(t, f: float = 1, k: int = 2):
     """ Fourrier decomposition 
 
     Args:
@@ -15,13 +15,17 @@ def f(t, f: float = 0.5, k: int = 2):
     Returns:
         values
     """
-    y = 0
+    y = np.zeros(t.shape[0])
     for i in range(0, k):
 
         y += np.sin((2*i + 1) * 2*np.pi*f*t)/(2*i + 1)
     
     
     y /= (4/np.pi)
+    
+    # transform values between 0 and 1
+    y = (y - np.min(y)) / (np.max(y) - np.min(y))
+    
     return y
 
 class MyRegression(problems.base.Problem):
@@ -38,20 +42,20 @@ class MyRegression(problems.base.Problem):
     def eval(self, grn):
 
         grn.setup()
-        grn.warmup(25)
+        grn.warmup(10)
         fit = 0.0
         for i in range(max(self.x_train.shape)):
             grn.set_input(self.x_train[i])
             grn.step()
-            fit += np.abs(grn.get_output() - self.y_train[i]).item()
+            fit += np.linalg.norm(grn.get_output() - self.y_train[i]).item() / max(self.x_train.shape)
 
-        return -fit
+        return 1-fit
 
 def main():
 
 
 
-    t = np.linspace(-5, 5, 500)
+    t = np.linspace(0, 1, 100)
     y = f(t)
     
 
@@ -60,13 +64,30 @@ def main():
 
 
     grneat = evolution.Evolution(problem, grn)
-    grneat.run(100)
-    
+    best_fit, best_ind = grneat.run(1000)
+
+    best_fit_history = grneat.best_fit_history
+    logger.info("best fit: ", best_fit)
     # problem.eval(grneat.best_grn)
     
     # y_eval = f(t_eval)
+    best_grn = best_ind.grn
 
-    plt.plot(t, y)
+    best_grn.setup()
+    best_grn.warmup(25)
+    y_eval = []
+    for i in range(max(t.shape)):
+        best_grn.set_input(t[i])
+        best_grn.step()
+        y_eval.append(best_grn.get_output())
+
+
+    plt.plot(t, y_eval, label="prediction")
+    plt.plot(t, y, label="target")
+
+    plt.legend()
+    plt.figure(figsize=(10, 5))
+    plt.plot(best_fit_history)
     plt.show()
 
 
