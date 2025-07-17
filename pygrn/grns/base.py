@@ -9,6 +9,8 @@ class GRN(abc.ABC):
 
     Implements methods related to the protein encoding of a GRN, but requires
     subclasses to implement all methods related to dynamics.
+
+    # where is the IDsize ? 
     """
     inhibitors = []
     enhancers = []
@@ -22,6 +24,8 @@ class GRN(abc.ABC):
     delta = 0.5
 
     dt = 1
+
+    idsize = 32 # TODO put it in config ? 
 
     @abc.abstractmethod
     def __init__(self):
@@ -114,15 +118,41 @@ class GRN(abc.ABC):
         return len(self.identifiers)
 
     def protein_distance(self, other, k, j):
+        """
+            Compute the distance between proteins k of the parent genome and protein i of the other genome
+
+        This distance is composed of three parts:
+        - The difference in the identifiers (ID_COEF)
+        - The difference in the inhibitors (INH_COEF)
+        - The difference in the enhancers (ENH_COEF)
+
+        The distance is computed as:
+        TODO small questions, here in papers [1] they a*abs(tag_A - idB) and divide the whole things by p (IDsize in [1] github)
+        distance = a * abs(identifiers[k] - identifiers[j]) +
+                   b * abs(inhibitors[k] - inhibitors[j]) +
+                   c * abs(enhancers[k] - enhancers[j])
+        """
         return (abs(self.identifiers[k] - other.identifiers[j]) *
                 config.ID_COEF +
                 abs(self.inhibitors[k] - other.inhibitors[j]) *
                 config.INH_COEF +
-                abs(self.enhancers[k] - other.enhancers[j]) * config.ENH_COEF)
+                abs(self.enhancers[k] - other.enhancers[j]) * config.ENH_COEF) / self.idsize
 
     def distance_to(self, other):
-        """Returns the distance """
+        """
+            Returns the distance between the genome A and B
+            The genome A is the parent object of genotype self, and B have the genotype other
+
+            dist = summ_inputs(D(a, b) for a and B inputs protein in both Genomes ) + 
+                   summ_outputs(D(a, b) for a and B outputs protein in both Genomes ) + 
+                   summ_rA(min_Rb(D(a, b)) for a and B regulatory protein in both Genomes ) + Db + Dd/(max_size + 2) 
+            [1]
+            return dist
+        """
+
+
         distance = 0.0
+
         if self.size() > other.size():
             gsmall = other
             glarge = self
@@ -130,19 +160,21 @@ class GRN(abc.ABC):
             gsmall = self
             glarge = other
 
-        # First compare inputs and outputs
+        # Compute Din and Dout, input protein are the first num_input + num_output elements
         for k in range(glarge.num_input + glarge.num_output):
             gDist = glarge.protein_distance(gsmall, k, k)
             distance += gDist
 
-        # Compare regulatory
+        # Compute Dreg
+        # protein k in large
         for k in range(glarge.num_input + glarge.num_output, glarge.size()):
             if gsmall.num_regulatory == 0:
-                distance += config.ID_COEF + config.INH_COEF + config.ENH_COEF
+                distance += config.ID_COEF + config.INH_COEF + config.ENH_COEF # not mentionned in [1]
             else:
-                min_dist = np.inf
-                for j in range(gsmall.num_input + gsmall.num_output,
-                               gsmall.size()):
+                # could be done with numpy no ?
+                min_dist = np.inf 
+                # protein j in small
+                for j in range(gsmall.num_input + gsmall.num_output, gsmall.size()):
                     gdist = glarge.protein_distance(gsmall, k, j)
                     if gdist < min_dist:
                         min_dist = gdist

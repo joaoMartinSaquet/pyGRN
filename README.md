@@ -1,4 +1,4 @@
-# pyGRN
+# pyGRN OLD README
 
 [![Build Status](https://travis-ci.org/d9w/pyGRN.svg?branch=master)](https://travis-ci.org/d9w/pyGRN)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -51,3 +51,10 @@ pytest -v -s tests/grns/test_grn_compare.py
 ```
 
 The tests also have many examples of usage beyond the above files.
+
+
+# PyGRN NEW README
+
+
+# References
+[1] S. Cussat-Blanc, K. Harrington, and J. Pollack, “Gene Regulatory Network Evolution Through Augmenting Topologies,” IEEE Transactions on Evolutionary Computation, vol. 19, no. 6, pp. 823–837, Dec. 2015, doi: 10.1109/TEVC.2015.2396199. https://github.com/scussatb/GRNEAT.git

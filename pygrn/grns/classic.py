@@ -28,15 +28,16 @@ class ClassicGRN(GRN):
             self.step()
 
     def setup(self):
+        """ IDSIZE is missing here NO ? """
         self.inhibit_match = np.zeros(
             [len(self.identifiers), len(self.identifiers)])
         self.enhance_match = np.zeros(
             [len(self.identifiers), len(self.identifiers)])
         for k in range(len(self.identifiers)):
             for j in range(len(self.identifiers)):
-                self.enhance_match[k, j] = np.abs(
+                self.enhance_match[k, j] = self.idsize - np.abs(
                     self.enhancers[k] - self.identifiers[j])
-                self.inhibit_match[k, j] = np.abs(
+                self.inhibit_match[k, j] = self.idsize - np.abs(
                     self.inhibitors[k] - self.identifiers[j])
 
         for k in range(len(self.identifiers)):
