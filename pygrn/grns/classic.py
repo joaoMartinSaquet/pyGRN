@@ -67,7 +67,7 @@ class ClassicGRN(GRN):
 
     def get_output(self):
         return self.concentration[self.num_input:(
-            self.num_output + self.num_input)]
+            self.num_output + self.num_input)].copy()
 
 
     # @numba.jit(nopython=True)

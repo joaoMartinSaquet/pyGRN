@@ -25,7 +25,7 @@ class GRN(abc.ABC):
 
     dt = 1
 
-    idsize = 32 # TODO put it in config ? 
+    idsize = 0 # TODO put it in config ? 
 
     @abc.abstractmethod
     def __init__(self):
@@ -136,7 +136,7 @@ class GRN(abc.ABC):
                 config.ID_COEF +
                 abs(self.inhibitors[k] - other.inhibitors[j]) *
                 config.INH_COEF +
-                abs(self.enhancers[k] - other.enhancers[j]) * config.ENH_COEF) / self.idsize
+                abs(self.enhancers[k] - other.enhancers[j]) * config.ENH_COEF) / 1
 
     def distance_to(self, other):
         """
@@ -173,7 +173,7 @@ class GRN(abc.ABC):
             else:
                 # could be done with numpy no ?
                 min_dist = np.inf 
-                # protein j in small
+                # protein j in small get the min distance
                 for j in range(gsmall.num_input + gsmall.num_output, gsmall.size()):
                     gdist = glarge.protein_distance(gsmall, k, j)
                     if gdist < min_dist:

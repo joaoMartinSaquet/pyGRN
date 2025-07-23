@@ -15,6 +15,7 @@ class Population:
         self.offspring = []
         self.fit_min = np.inf
         self.fit_max = -np.inf
+        self.best_ind = None
 
         while len(self.offspring) < config.POPULATION_SIZE:
             g = self.new_grn_function()
@@ -32,6 +33,8 @@ class Population:
             # self.evaluator_pool = 
 
     def evaluate(self, problem, num_workers=1):
+
+        
         if num_workers == 1:
             for ind in self.offspring:
                 fit = ind.get_fitness(problem)
@@ -39,23 +42,28 @@ class Population:
                     self.fit_min = fit
                 if fit > self.fit_max:
                     self.fit_max = fit
+                    self.best_ind = ind
         else:
 
             def get_fitness(ind_index):
                 fit = self.offspring[ind_index].get_fitness(problem)
                 # logger.info(fit)
                 return fit
-            fits = Parallel(n_jobs=num_workers, backend="threading")(
+
+            fits = Parallel(n_jobs=num_workers, backend="threading", verbose=0)(
                 delayed(get_fitness)(index) for index in range(len(self.offspring))
             )
 
-            min_pop_fit = np.min(fits)
-            max_pop_fit = np.max(fits)
+            min_pop_fit = np.argmin(fits)
+            max_pop_fit = np.argmax(fits)
 
-            if min_pop_fit < self.fit_min:
-                self.fit_min = min_pop_fit
-            if max_pop_fit > self.fit_max:
-                self.fit_max = max_pop_fit
+            if fits[min_pop_fit] < self.fit_min:
+                self.fit_min = fits[min_pop_fit]
+            if fits[max_pop_fit] > self.fit_max:
+                self.fit_max = fits[max_pop_fit]
+                self.best_ind = self.offspring[max_pop_fit]
+
+        return self.best_ind
 
     def size(self):
         return np.sum([len(sp.individuals) for sp in self.species])

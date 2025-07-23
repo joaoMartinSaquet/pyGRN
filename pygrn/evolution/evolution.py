@@ -29,6 +29,8 @@ class Evolution:
         self.population.evaluate(self.problem, self.num_workers)
         self.population.speciation()
         self.population.adjust_thresholds()
+
+        # renew species
         self.population.set_offspring_count()
         self.population.make_offspring()
         self.report()
@@ -38,8 +40,8 @@ class Evolution:
     def run(self, generations):
         for gen in range(generations):
             self.step()
-        best_fit, best_ind = self.population.get_best()
-        return best_fit, best_ind
+        best_fit, best_ind_pop = self.population.get_best()
+        return best_fit, best_ind_pop
 
     def report(self, dump_log=False, dump_grn=True):
 
