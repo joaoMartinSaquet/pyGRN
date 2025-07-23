@@ -49,20 +49,20 @@ class Evolution:
         for species_id in range(len(self.population.species)):
             sp = self.population.species[species_id]
             sp_best = sp.get_best_individual()
-            logger.debug(
-                f'S,%s,%d,%d,%d,%f,%f,%d,%f,%f,%f' % (
-                datetime.now().isoformat(),
-                self.generation, species_id,
-                len(sp.individuals),
-                sp.sum_adjusted_fitness,
-                sp_best.fitness,
-                sp_best.grn.size(),
-                sp.species_threshold,
-                np.mean(sp.get_representative_distances()),
-                np.mean([i.grn.size() for i in sp.individuals])  
-                )
+            # logger.debug(
+            #     f'S,%s,%d,%d,%d,%f,%f,%d,%f,%f,%f' % (
+            #     datetime.now().isoformat(),
+            #     self.generation, species_id,
+            #     len(sp.individuals),
+            #     sp.sum_adjusted_fitness,
+            #     sp_best.fitness,
+            #     sp_best.grn.size(),
+            #     sp.species_threshold,
+            #     np.mean(sp.get_representative_distances()),
+            #     np.mean([i.grn.size() for i in sp.individuals])  
+            #     )
 
-            )
+            # )
             if dump_log:
                 with open(self.log_file, 'a') as f:
                     f.write('S,%s,%d,%d,%d,%f,%f,%d,%f,%f,%f\n' % (

@@ -25,7 +25,7 @@ class GRN(abc.ABC):
 
     dt = 1
 
-    idsize = 0 # TODO put it in config ? 
+    idsize = 1 
 
     @abc.abstractmethod
     def __init__(self):
