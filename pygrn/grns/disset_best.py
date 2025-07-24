@@ -18,11 +18,11 @@ class DissetGRN(GRN):
     next_concentration = []
     enhance_match = []
     inhibit_match = []
-    
+    idsize = 1
 
     
     def __init__(self):
-        pass
+        self.idsize = 1
     
     
 
@@ -57,10 +57,10 @@ class DissetGRN(GRN):
         # we compute it with beta outside 
         for k in range(len(self.identifiers)):
             for j in range(len(self.identifiers)):
-                self.enhance_match[k, j] = np.exp(self.beta * self.enhance_match[k, j] - enh_max) #
-                self.inhibit_match[k, j] = np.exp(self.beta * self.inhibit_match[k, j] - inh_max) # a = 1 
-                # self.enhance_match[k, j] = np.exp(- self.beta * self.enhance_match[k, j]) #
-                # self.inhibit_match[k, j] = np.exp(- self.beta * self.inhibit_match[k, j]) # a = 0 
+                # self.enhance_match[k, j] = np.exp(self.beta * self.enhance_match[k, j] - enh_max) #
+                # self.inhibit_match[k, j] = np.exp(self.beta * self.inhibit_match[k, j] - inh_max) # a = 1 
+                self.enhance_match[k, j] = np.exp(- self.beta * self.enhance_match[k, j]) #
+                self.inhibit_match[k, j] = np.exp(- self.beta * self.inhibit_match[k, j]) # a = 0 
                 
 
         self.reset()
