@@ -34,7 +34,6 @@ class ClassicGRN(GRN):
             self.step()
 
     def setup(self):
-        """ IDSIZE is missing here NO ? """
         self.inhibit_match = np.zeros(
             [len(self.identifiers), len(self.identifiers)])
         self.enhance_match = np.zeros(
