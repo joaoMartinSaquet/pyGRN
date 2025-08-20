@@ -100,3 +100,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Generated GRNS
+*.grn 
+
+# results folder
+/results

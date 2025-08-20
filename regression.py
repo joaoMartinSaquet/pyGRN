@@ -1,77 +1,98 @@
 from pygrn import grns, problems, evolution, config
 import argparse
 import os
+import numpy as np
+import matplotlib.pyplot as plt
+from loguru import logger
 
-parser = argparse.ArgumentParser(description='Evolve a GRN for regression')
-parser.add_argument('--no-learn', dest='learn', action='store_const',
-                    const=False, default=True,
-                    help='Turn off learning')
-parser.add_argument('--no-evo', dest='evo', action='store_const',
-                    const=False, default=True,
-                    help='Turn off evolution')
-parser.add_argument('--lamarckian', dest='lamarckian', action='store_const',
-                    const=True, default=False, help='Lamarckian evolution')
-parser.add_argument('--unsupervised', dest='unsupervised', action='store_const',
-                    const=True, default=False, help='Unsupervised evolution')
-parser.add_argument('--stateful', dest='stateful', action='store_const',
-                    const=True, default=False, help='Stateful model')
-parser.add_argument('--id', type=str, help='Run id for logging')
-parser.add_argument('--model', type=str, help='Model')
-parser.add_argument('--ntrain', type=int, default=6*24*60, help='Number of training samples')
-parser.add_argument('--ntest', type=int, default=24*60, help='Number of testing samples')
-parser.add_argument('--shift', type=int, default=1, help='Data shift')
-parser.add_argument('--lag', type=int, default=60, help='Time step for prediction')
-parser.add_argument('--nreg', type=int, default=10,
-                    help='Number of starting regulatory proteins')
-parser.add_argument('--nout', type=int, default=1,
-                    help='Number of outputs proteins, unit size for LSTM or SimpleRNN')
-parser.add_argument('--batch_size', type=int, default=1,
-                    help='Batch size')
-parser.add_argument('--seed', type=int, help='Random seed',
-                    default=0)
-parser.add_argument('--problem', type=str, help='Problem',
-                    default='Prediction')
-parser.add_argument('--epochs', type=int, help='Number of epochs', default=1)
-parser.add_argument('--gens', type=int, help='Number of generations',
-                    default=50)
-parser.add_argument('--grn_file', type=str, help='Experts from GRN file',
-                    default='')
-parser.add_argument('--root_dir', type=str, help='Root directory',
-                    default='./')
+def f(t, f: float = 1, k: int = 2):
+    """ Fourrier decomposition 
 
-args = parser.parse_args()
+    Args:
+        t (_type_): time
+        k (int, optional): degree of decomposition. Defaults to 2.
 
-log_dir = os.path.join(args.root_dir, 'logs')
-grn_dir = os.path.join(args.root_dir, 'grns')
-data_dir = os.path.join(args.root_dir, 'data')
-log_file = os.path.join(log_dir, 'fits_' + args.id + '.log')
+    Returns:
+        values
+    """
+    y = np.zeros(t.shape[0])
+    for i in range(0, k):
 
-config.START_REGULATORY_SIZE = args.nreg
+        y += np.sin((2*i + 1) * 2*np.pi*f*t)/(2*i + 1)
+    
+    
+    y /= (4/np.pi)
+    
+    # transform values between 0 and 1
+    y = (y - np.min(y)) / (np.max(y) - np.min(y))
+    
+    return y
 
-p = eval('problems.' + args.problem)
-p = p(log_file, seed=args.seed, learn=args.learn, epochs=args.epochs,
-      data_dir=data_dir, lamarckian=args.lamarckian,
-      stateful=args.stateful, model=args.model,
-      nout=args.nout, batch_size=args.batch_size)
-# p = p(log_file, seed=args.seed, learn=args.learn, epochs=args.epochs,
-#       data_dir=data_dir, lamarckian=args.lamarckian,
-#       unsupervised=args.unsupervised, stateful=args.stateful,
-#       model=args.model, ntrain=args.ntrain, ntest=args.ntest,
-#       shift=args.shift, lag=args.lag)
+class MyRegression(problems.base.Problem):
+    def __init__(self, x_train, y_train):
+        super().__init__("regression")
+        self.namestr = "regression"
+        self.nin = 1
+        self.nout = 1
 
-newgrn = lambda: grns.DiffGRN()
-if args.evo:
-    grneat = evolution.Evolution(p, newgrn, run_id=args.id,
-                                 grn_dir=grn_dir, log_dir=log_dir)
-    grneat.run(args.gens)
-else:
-    for i in range(20):
-        grn = newgrn()
-        if args.grn_file:
-            with open(args.grns, 'r') as f:
-                grns = f.readlines()
-                grn.from_str(grns[-1])
-        else:
-            grn.random(p.nin, p.nout, args.nreg)
-        p.generation_function(None, i)
-        p.eval(grn)
+        self.x_train = x_train
+        self.y_train = y_train
+
+        
+    def eval(self, grn):
+
+        grn.setup()
+        grn.warmup(10)
+        fit = 0.0
+        for i in range(max(self.x_train.shape)):
+            grn.set_input(self.x_train[i])
+            grn.step()
+            fit += np.linalg.norm(grn.get_output() - self.y_train[i]).item() / max(self.x_train.shape)
+
+        return 1-fit
+
+def main():
+
+
+
+    t = np.linspace(0, 1, 100)
+    y = f(t)
+    
+
+    grn = lambda : grns.ClassicGRN()
+    problem = MyRegression(t, y)
+
+
+    grneat = evolution.Evolution(problem, grn)
+    best_fit, best_ind = grneat.run(1000)
+
+    best_fit_history = grneat.best_fit_history
+    logger.info("best fit: ", best_fit)
+    # problem.eval(grneat.best_grn)
+    
+    # y_eval = f(t_eval)
+    best_grn = best_ind.grn
+
+    best_grn.setup()
+    best_grn.warmup(25)
+    y_eval = []
+    for i in range(max(t.shape)):
+        best_grn.set_input(t[i])
+        best_grn.step()
+        y_eval.append(best_grn.get_output())
+
+
+    plt.plot(t, y_eval, label="prediction")
+    plt.plot(t, y, label="target")
+
+    plt.legend()
+    plt.figure(figsize=(10, 5))
+    plt.plot(best_fit_history)
+    plt.show()
+
+
+
+if __name__ == "__main__":
+    main()
+
+

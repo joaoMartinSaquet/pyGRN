@@ -18,7 +18,9 @@ def mutate_remove(parent):
     """Delete a random regulatory protein from a clone of the parent.
     If the parent does not have any regulatory proteins, return None
     """
-    if parent.size() > (parent.num_input + parent.num_output):
+
+    # +1 to ensure that the parent has at least one regulatory protein
+    if parent.size() > (parent.num_input + parent.num_output) + 1:
         child = parent.clone()
 
         to_remove = np.random.randint(child.num_input + child.num_output,
