@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pygrn"
+version = "0.1"
+description = ""
+readme = "README.md"
+license = {text = ""}
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+dependencies = [
+    "numpy",
+    "PyYAML",
+    "tqdm",
+    "loguru",
+    "numba",
+]
+requires-python = ">=3.8"
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pygrn*"]
+exclude = ["tests*"]
