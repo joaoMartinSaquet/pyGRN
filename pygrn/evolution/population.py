@@ -3,7 +3,7 @@ from pygrn.evolution import mutate_modify, mutate, crossover
 from pygrn import config
 import numpy as np
 import random
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed, Memory
 from loguru import logger
 
 
