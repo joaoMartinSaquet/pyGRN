@@ -64,7 +64,7 @@ class ReinforcementLearningTask(Problem):
 
 
     def eval(self, grn):
-        fit = 0
+        fit = -100 # to ensure that even if not evaluated it is not selected
         reward = 0
         ts = 0
         seed = np.random.randint(0, 5)
