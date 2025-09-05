@@ -24,13 +24,13 @@ def set_env_pool(envs):
 class ReinforcementLearningTask(Problem):
 
 
-    def __init__(self, env_info, env_name="Pendulum-v1", env = None):
+    def __init__(self, env_info, env_name="Pendulum-v1", env = None, max_ts = None):
         
 
 
         namestr = env_name
         super().__init__(namestr)
-
+        self.max_ts = max_ts
         self.env = None
         if env is not None:
             self.env = env
@@ -63,54 +63,68 @@ class ReinforcementLearningTask(Problem):
 
 
 
-    def eval(self, grn):
-        fit = -100 # to ensure that even if not evaluated it is not selected
-        reward = 0
-        ts = 0
-        seed = np.random.randint(0, 5)
-
-        if self.env is None:
-            while len(ENV_POOL) < 1:
-                pass
-            eval_env = ENV_POOL.pop()
-        else:
-            eval_env = self.env
-
-        grn.setup()
-        grn.warmup(25)
-        seed = np.random.randint(0, 5)
-        obs, _ = eval_env.reset(seed=seed)
-        done = False
-
-        while True:
+    def eval(self, grn, n_eval = 1):
 
 
-            # if self.has_continuous_observation:
-            #     (obs - self.l_obs) / (self.h_obs - self.l_obs)  # map action to [0, 1]
-            grn.set_input(obs)
-            grn.step()
-            # print("grn best output ", grn.get_output().item())
-            if self.has_continuous_action:
-                action = grn.get_output() * (self.h_act - self.l_act) + self.l_act
+
+
+        fit = 0 # to ensure that even if not evaluated it is not selected
+
+        for i in range(1):
+            reward = 0
+            ts = 0
+            seed = 0
+            # seed = 0 # try to fix the seed then all individuals will have the same seed
+
+            if self.env is None:
+                while len(ENV_POOL) < 1:
+                    pass
+                eval_env = ENV_POOL.pop()
             else:
-                action = int(grn.get_output()[0] * (self.n - 1))
+                eval_env = self.env
 
-            # print("action ", action)s
-            # print(action)
-            # action = 1 if grn.get_output().item() > 0.5 else 0
-            obs, r, terminated, truncated, info = eval_env.step(action)
-            
-            if terminated or truncated:
-                done = True
-                break
-            reward += r
-            ts += 1
-  
-            fit = reward
+            grn.setup()
+            # grn.warmup(25)
+            obs, _ = eval_env.reset(seed=seed)
+            done = False
 
-            # if fit ==0:
-                # logger.debug(f"fit = {fit} ")
+            while True:
+
+
+                # if self.has_continuous_observation:
+                #     (obs - self.l_obs) / (self.h_obs - self.l_obs)  # map action to [0, 1]
+                grn.set_input(obs)
+                grn.step()
+                # print("grn best output ", grn.get_output().item())
+                if self.has_continuous_action:
+                    action = grn.get_output() * (self.h_act - self.l_act) + self.l_act
+                else:
+                    action = int(grn.get_output()[0] * (self.n - 1))
+
+                # print("action ", action)s
+                # print(action)
+                # action = 1 if grn.get_output().item() > 0.5 else 0
+                obs, r, terminated, truncated, info = eval_env.step(action)
+                
+                if terminated or truncated:
+                    done = True
+                    break
+
+                if done:
+                    break
+                reward += r
+                ts += 1
+    
+                
+                if self.max_ts is not None and ts > self.max_ts:
+                    break
+
+                # if fit ==0:
+                    # logger.debug(f"fit = {fit} ")
+            fit += reward
+
         if self.env is None:
             ENV_POOL.append(eval_env)
         # print("reward = ", reward, "\t steps = ", ts)
-        return fit 
+
+        return fit/n_eval

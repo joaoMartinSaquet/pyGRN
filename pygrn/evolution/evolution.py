@@ -121,7 +121,7 @@ class Evolution:
                         np.mean([i.grn.size() for i in sp.individuals])))
         best_fitness, best_ind = self.population.get_best()
         fit_mean, fit_std = self.population.get_stats()
-        logger.info(f"Generation {self.generation}: best fit {best_fitness}, fit mean {fit_mean}, fit std {fit_std}")
+        logger.info(f"Generation {self.generation}: best fit {best_fitness:.2f}, fit mean {fit_mean:.2f}, fit std {fit_std:.2f}")
         if self.log_fit:
             with open(self.log_file, 'a') as f:
                 f.write('G,%s,%d,%d,%f,%d,%f,%f\n' % (

@@ -18,6 +18,7 @@ class Species:
         self.num_offspring = 0
 
     def tournament_select(self):
+        # weird ! 
         tournament = []
         if config.TOURNAMENT_WITH_REPLACEMENT:
             tournament = [random.choice(self.individuals) for

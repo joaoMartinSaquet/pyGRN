@@ -5,7 +5,7 @@ import numpy as np
 import random
 from joblib import Parallel, delayed, Memory
 from loguru import logger
-
+import gc
 
 class Population:
 
@@ -62,7 +62,7 @@ class Population:
             if fits[max_pop_fit] > self.fit_max:
                 self.fit_max = fits[max_pop_fit]
                 self.best_ind = self.offspring[max_pop_fit]
-
+        gc.collect()
         return self.best_ind
 
     def size(self):
